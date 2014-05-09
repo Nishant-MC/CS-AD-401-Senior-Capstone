@@ -11,24 +11,26 @@
  * "Body Language" Presentation Ideas
 
 >>> Introduction to the Kinect - What is it, How does it work, what can it do, what does it have
->>> Introduction to the problem landscape - programming environment (C#, VS2013, Kinect SDK)
->>> What's out there (lit review)
+>>> Introduction to the problem landscape - programming environment (C#, VS2013 with WPF, Kinect SDK)
+>>> What's out there (lit review / approaches to gesture recognition problems)
 
 >>> How to parameterize a pointing gesture? (mathematical definition)
 --- Go deeper: how is the input tracked? (skeleton data, rgb, depth)
 -------------- what is pointing in this context?
 
->>> Face Tracking and Finger Tracking: Agreement implies a point?
->>> A word on object recognition (DirectX 11, GPU, etc.)
+>>> Face Tracking and Finger Tracking: Agreement implies a pointing gesture? What about disagreement?
+>>> A word on object recognition (Its hard: you need better hardware, DirectX 11, GPU, etc.)
 >>> Code Demo
 
 >>> The Leap Motion - what it means for the project
-(Can we get a Leap & Kinect to talk to each other, minority report style?)
+    (Can we get a Leap & Kinect to talk to each other, minority report style?
+     Short answer: Not in WPF C#, but maybe with WCF C++ or the Processing/Arduino libraries)
 
 >>> The Kinect 2 - What it means for the project
 
->>> Shoutout to Jay
-
+>>> Shoutout to Jay (for the Kinect / Mentorship / etc.) 
+    * and the MS Kinect team (for good ref material & sample code)
+    * and David Catuhe (for a great reference book & sample code)
 
  */
 
@@ -85,9 +87,13 @@ namespace KinectGestureRecognition
             InitializeComponent();
         }
 
+        // Initializing the Kinect Sensor
         KinectSensor kinectSensor;
-        Kinect.Toolbox.ColorStreamManager colorManager = new Kinect.Toolbox.ColorStreamManager();
-        
+
+
+        // -- COLOR MANAGER --
+
+        Kinect.Toolbox.ColorStreamManager colorManager = new Kinect.Toolbox.ColorStreamManager(); // VAR LATER
 
         // Initializing a color stream manager {RGB input}
         void kinectSensor_ColorFrameReady(object sender, ColorImageFrameReadyEventArgs e)
@@ -96,9 +102,33 @@ namespace KinectGestureRecognition
             {
                 if (frame == null)
                     return;
+
                 colorManager.Update(frame);
             }
         }
+
+        // -- COLOR MANAGER --
+
+
+        // -- DEPTH MANAGER --
+
+        Kinect.Toolbox.DepthStreamManager depthManager = new Kinect.Toolbox.DepthStreamManager(); // VAR LATER
+
+        // Initializing a depth stream manager {Intensity mapping}
+        void kinectSensor_DepthFrameReady(object sender, DepthImageFrameReadyEventArgs e)
+        {
+            using (var frame = e.OpenDepthImageFrame())
+            {
+                if (frame == null)
+                    return;
+
+                depthManager.Update(frame);
+            }
+        }
+
+        // -- DEPTH MANAGER --
+
+
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
@@ -305,9 +335,60 @@ namespace Kinect.Toolbox
 
         void ConvertDepthFrame(short[] depthFrame16)
         {
-            // INSERT CODE HERE
+            for (int i16 = 0, i32 = 0; i16 < depthFrame16.Length && i32 < depthFrame32.Length; i16 ++, i32 += 4)
+            {
+                int user = depthFrame16[i16] & 0x07;        // 111 bitmask
+                int realDepth = (depthFrame16[i16] >> 3);   // Bitshift; 3x to the right
+
+                byte intensity = (byte)(255 - (255 * realDepth / 0x1fff)); // 255 = Close, 0 = Far
+
+                depthFrame32[i32] = 0;
+                depthFrame32[i32 + 1] = 0;
+                depthFrame32[i32 + 2] = 0;
+                depthFrame32[i32 + 3] = 255;
+
+                switch (user)
+                { 
+                    case 0: // No one is nearby
+                        depthFrame32[i32] = (byte)(intensity / 2);
+                        depthFrame32[i32 + 1] = (byte)(intensity / 2);
+                        depthFrame32[i32 + 2] = (byte)(intensity / 2);
+                        break;
+
+                    case 1: 
+                        depthFrame32[i32] = intensity;
+                        break;
+
+                    case 2:
+                        depthFrame32[i32 + 1] = intensity;
+                        break;
+
+                    case 3:
+                        depthFrame32[i32 + 2] = intensity;
+                        break;
+
+                    case 4:
+                        depthFrame32[i32] = intensity;
+                        depthFrame32[i32 + 1] = intensity;
+                        break;
+
+                    case 5:
+                        depthFrame32[i32] = intensity;
+                        depthFrame32[i32 + 2] = intensity;
+                        break;
+
+                    case 6:
+                        depthFrame32[i32 + 1] = intensity;
+                        depthFrame32[i32 + 2] = intensity;
+                        break;
+
+                    case 7:
+                        depthFrame32[i32] = intensity;
+                        depthFrame32[i32 + 1] = intensity;
+                        depthFrame32[i32 + 2] = intensity;
+                        break;
+                }
+            }
         }
     }
 }
-
-
