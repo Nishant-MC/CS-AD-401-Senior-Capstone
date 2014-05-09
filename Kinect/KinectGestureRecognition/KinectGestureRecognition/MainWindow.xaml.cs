@@ -11,6 +11,10 @@ using System;
 using System.Windows;
 using System.Windows.Controls;
 
+// RGB System includes
+using System.ComponentModel;
+using System.Linq.Expressions;
+
 // Including the Kinect NuiAPI
 using Microsoft.Kinect;
 
@@ -137,5 +141,25 @@ namespace KinectGestureRecognition
             }
         }
 
+    }
+}
+
+
+namespace Kinect.Toolbox
+{
+    // Notifier class - Helps handle notifications when properties change
+    public abstract class Notifier : INotifyPropertyChanged
+    {
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected void RaisePropertyChanged<T>(Expression<Func<T>> propertyExpression)
+        {
+            var memberExpression = propertyExpression.Body as MemberExpression;
+            if (memberExpression == null) return;
+
+            string propertyName = memberExpression.Member.Name;
+            if (PropertyChanged != null)
+                PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+        }
     }
 }
