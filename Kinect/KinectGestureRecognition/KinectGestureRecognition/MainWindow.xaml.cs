@@ -56,6 +56,18 @@ namespace KinectGestureRecognition
         }
 
         KinectSensor kinectSensor;
+        Kinect.Toolbox.ColorStreamManager colorManager = new Kinect.Toolbox.ColorStreamManager();
+
+        // Initializing a color stream manager {RGB input}
+        void kinectSensor_ColorFrameReady(object sender, ColorImageFrameReadyEventArgs e)
+        {
+            using (var frame = e.OpenColorImageFrame())
+            {
+                if (frame == null)
+                    return;
+                colorManager.Update(frame);
+            }
+        }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
@@ -170,7 +182,7 @@ namespace Kinect.Toolbox
         }
     }
 
-    // Color Stream Manager class {for handling RGB input)
+    // Color Stream Manager class (for handling RGB input)
     public class ColorStreamManager : Notifier
     {
         public WriteableBitmap Bitmap { get; private set; }
@@ -180,7 +192,7 @@ namespace Kinect.Toolbox
             var pixelData = new byte[frame.PixelDataLength];
             frame.CopyPixelDataTo(pixelData);
 
-            if (Bitmap == null)
+            if (Bitmap == null) // This bitmap is BGR with 96 DPI
                 Bitmap = new WriteableBitmap(frame.Width, frame.Height, 96, 96, PixelFormats.Bgr32, null);
 
             int stride = Bitmap.PixelWidth * Bitmap.Format.BitsPerPixel / 8;
