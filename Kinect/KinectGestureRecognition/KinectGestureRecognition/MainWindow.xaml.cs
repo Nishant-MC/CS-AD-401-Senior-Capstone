@@ -6,6 +6,9 @@
  * Project Supervisor: Jay Chen
 */
 
+// Including the Kinect NuiAPI
+using Microsoft.Kinect;
+
 // Critical System includes
 using System;
 using System.Windows;
@@ -15,12 +18,14 @@ using System.Windows.Controls;
 using System.ComponentModel;
 using System.Linq.Expressions;
 
-// Including the Kinect NuiAPI
-using Microsoft.Kinect;
+// ColorStreamManager includes
+using System.Windows.Media.Imaging;
+using System.Windows.Media;
+
 
 /*
 
- * * * Extra includes for later if needed * * *
+ ### Extra includes for later if needed ###
  
 using System.Collections.Generic;
 using System.Linq;
@@ -28,12 +33,11 @@ using System.Text;
 using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-  
+ ### Extra includes for later if needed ###
+ 
 */
 
 namespace KinectGestureRecognition
@@ -41,6 +45,8 @@ namespace KinectGestureRecognition
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
+    
+    // Main Window class (where the magic happens)
     public partial class MainWindow : Window
     {
 
@@ -145,9 +151,10 @@ namespace KinectGestureRecognition
 }
 
 
+// Utility toolbox for things I don't want to repeat over and over for different classes
 namespace Kinect.Toolbox
 {
-    // Notifier class - Helps handle notifications when properties change
+    // Notifier class (for handling when properties change)
     public abstract class Notifier : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler PropertyChanged;
@@ -162,4 +169,28 @@ namespace Kinect.Toolbox
                 PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
         }
     }
+
+    // Color Stream Manager class {for handling RGB input)
+    public class ColorStreamManager : Notifier
+    {
+        public WriteableBitmap Bitmap { get; private set; }
+
+        public void Update(ColorImageFrame frame)
+        {
+            var pixelData = new byte[frame.PixelDataLength];
+            frame.CopyPixelDataTo(pixelData);
+
+            if (Bitmap == null)
+                Bitmap = new WriteableBitmap(frame.Width, frame.Height, 96, 96, PixelFormats.Bgr32, null);
+
+            int stride = Bitmap.PixelWidth * Bitmap.Format.BitsPerPixel / 8;
+            Int32Rect dirtyRect = new Int32Rect(0, 0, Bitmap.PixelWidth, Bitmap.PixelHeight);
+            Bitmap.WritePixels(dirtyRect, pixelData, stride, 0);
+
+            RaisePropertyChanged(() => Bitmap);
+        }
+    }
+
 }
+
+
