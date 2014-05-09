@@ -1,0 +1,12 @@
+c:\users\loaner\documents\visual studio 2013\Projects\KinectGestureRecognition\KinectGestureRecognition\bin\Debug\KinectGestureRecognition.exe
+c:\users\loaner\documents\visual studio 2013\Projects\KinectGestureRecognition\KinectGestureRecognition\bin\Debug\KinectGestureRecognition.pdb
+c:\users\loaner\documents\visual studio 2013\Projects\KinectGestureRecognition\KinectGestureRecognition\obj\Debug\MainWindow.baml
+c:\users\loaner\documents\visual studio 2013\Projects\KinectGestureRecognition\KinectGestureRecognition\obj\Debug\MainWindow.g.cs
+c:\users\loaner\documents\visual studio 2013\Projects\KinectGestureRecognition\KinectGestureRecognition\obj\Debug\App.g.cs
+c:\users\loaner\documents\visual studio 2013\Projects\KinectGestureRecognition\KinectGestureRecognition\obj\Debug\KinectGestureRecognition_MarkupCompile.cache
+c:\users\loaner\documents\visual studio 2013\Projects\KinectGestureRecognition\KinectGestureRecognition\obj\Debug\KinectGestureRecognition.g.resources
+c:\users\loaner\documents\visual studio 2013\Projects\KinectGestureRecognition\KinectGestureRecognition\obj\Debug\KinectGestureRecognition.Properties.Resources.resources
+c:\users\loaner\documents\visual studio 2013\Projects\KinectGestureRecognition\KinectGestureRecognition\obj\Debug\KinectGestureRecognition.csproj.GenerateResource.Cache
+c:\users\loaner\documents\visual studio 2013\Projects\KinectGestureRecognition\KinectGestureRecognition\obj\Debug\KinectGestureRecognition.exe
+c:\users\loaner\documents\visual studio 2013\Projects\KinectGestureRecognition\KinectGestureRecognition\obj\Debug\KinectGestureRecognition.pdb
+c:\users\loaner\documents\visual studio 2013\Projects\KinectGestureRecognition\KinectGestureRecognition\obj\Debug\KinectGestureRecognition.csprojResolveAssemblyReference.cache
