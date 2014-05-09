@@ -6,6 +6,32 @@
  * Project Supervisor: Jay Chen
 */
 
+/*
+
+ * "Body Language" Presentation Ideas
+
+>>> Introduction to the Kinect - What is it, How does it work, what can it do, what does it have
+>>> Introduction to the problem landscape - programming environment (C#, VS2013, Kinect SDK)
+>>> What's out there (lit review)
+
+>>> How to parameterize a pointing gesture? (mathematical definition)
+--- Go deeper: how is the input tracked? (skeleton data, rgb, depth)
+-------------- what is pointing in this context?
+
+>>> Face Tracking and Finger Tracking: Agreement implies a point?
+>>> A word on object recognition (DirectX 11, GPU, etc.)
+>>> Code Demo
+
+>>> The Leap Motion - what it means for the project
+(Can we get a Leap & Kinect to talk to each other, minority report style?)
+
+>>> The Kinect 2 - What it means for the project
+
+>>> Shoutout to Jay
+
+
+ */
+
 // ##### BITS AND BOBS #####
 // kinectDisplay.DataContext = colorManager;
 // ##### BITS AND BOBS #####
@@ -187,7 +213,7 @@ namespace Kinect.Toolbox
         }
     }
 
-    // Color Stream Manager class (for handling RGB input)
+    // Color Stream Manager class (for handling RGB + YUV input)
     public class ColorStreamManager : Notifier
     {
         public WriteableBitmap Bitmap { get; private set; }
@@ -249,6 +275,39 @@ namespace Kinect.Toolbox
         }
     }
 
+    // Depth Stream Manager class (for handling RGB + YUV input)
+    public class DepthStreamManager : Notifier
+    {
+        byte[] depthFrame32;
+
+        public WriteableBitmap Bitmap { get; private set; }
+
+        public void Update(DepthImageFrame frame)
+        {
+            var pixelData = new short[frame.PixelDataLength];
+            frame.CopyPixelDataTo(pixelData);
+
+            if (depthFrame32 == null)
+                depthFrame32 = new byte[frame.Width * frame.Height * 4];
+            
+            if (Bitmap == null)
+                Bitmap = new WriteableBitmap(frame.Width, frame.Height, 96, 96, PixelFormats.Bgra32, null);
+
+            ConvertDepthFrame(pixelData);
+
+            int stride = Bitmap.PixelWidth * Bitmap.Format.BitsPerPixel / 8;
+            Int32Rect dirtyRect = new Int32Rect(0, 0, Bitmap.PixelWidth, Bitmap.PixelHeight);
+
+            Bitmap.WritePixels(dirtyRect, depthFrame32, stride, 0);
+
+            RaisePropertyChanged(() => Bitmap);
+        }
+
+        void ConvertDepthFrame(short[] depthFrame16)
+        {
+            // INSERT CODE HERE
+        }
+    }
 }
 
 
