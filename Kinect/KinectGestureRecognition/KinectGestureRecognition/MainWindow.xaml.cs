@@ -34,9 +34,6 @@
 
  */
 
-// ##### BITS AND BOBS #####
-// kinectDisplay.DataContext = colorManager;
-// ##### BITS AND BOBS #####
 
 // Including the Kinect NuiAPI
 using Microsoft.Kinect;
@@ -72,65 +69,25 @@ namespace KinectGestureRecognition
         {
             InitializeComponent();
 
-            // Selecting the first (and only) Kinect and enabling RGB, Depth & Skeleton tracking
+            // Selecting the first (and only) Kinect 
             var kinectSensor = KinectSensor.KinectSensors[0];
-            kinectSensor.ColorStream.Enable();
+
+            // Enabling RGB, Depth & Skeleton tracking
+            kinectSensor.ColorStream.Enable(ColorImageFormat.RgbResolution640x480Fps30);
             kinectSensor.DepthStream.Enable();
             kinectSensor.SkeletonStream.Enable();
             kinectSensor.Start();
+                        
+            // Grabbing frame data with our event signatures (event model, we're not polling for frames)
+            // kinectSensor.ColorFrameReady += kinectSensor_ColorFrameReady;
+            // kinectSensor.DepthFrameReady += kinectSensor_DepthFrameReady;
 
-            // Grabbing frame data with our event signature (event model, we're not polling for frames)
-            kinectSensor.ColorFrameReady += kinectSensor_ColorFrameReady;
-            kinectSensor.DepthFrameReady += kinectSensor_DepthFrameReady;
-
+      
         }
 
 
         // Initializing the Kinect Sensor
         KinectSensor kinectSensor;
-
-        // Initializing a color stream manager {RGB input}
-        void kinectSensor_ColorFrameReady(object sender, ColorImageFrameReadyEventArgs e)
-        {
-            var colorManager = new ColorStreamManager();
-
-            using (var frame = e.OpenColorImageFrame())
-            {
-                if (frame == null)
-                    return;
-
-                colorManager.Update(frame);
-            }
-        }
-
-
-        // Initializing a depth stream manager {Intensity mapping}
-        void kinectSensor_DepthFrameReady(object sender, DepthImageFrameReadyEventArgs e)
-        {
-            var depthManager = new DepthStreamManager();
-
-
-            using (var frame = e.OpenDepthImageFrame())
-            {
-                if (frame == null)
-                    return;
-
-                depthManager.Update(frame);
-            }
-        }
-
-        // FIX THE SKELLY TRACKER
-        void kinectSensor_SkeletonFrameReady(object sender, SkeletonFrameReadyEventArgs e)
-        {
-            SkeletonFrame frame = e.OpenSkeletonFrame();
-            if (frame == null)
-                return;
-
-            Skeleton[] skeletons = frame.GetSkeletons();
-
-            //if (skeletons.All(s => s.TrackingState == SkeletonTrackingState.NotTracked))
-                return;
-        }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
@@ -157,6 +114,7 @@ namespace KinectGestureRecognition
                 else
                 {
                     Initialize(); // Initialize the current Kinect sensor!
+                    MessageBox.Show("BATTLECRUISER OPERATIONAL!");
                 }
             }
 
@@ -201,8 +159,8 @@ namespace KinectGestureRecognition
                     MessageBox.Show("Dude I don't know what's wrong. Unhandled Status: " + e.Status);
                     break;
             }
-
         }
+
 
         // Constructor
         private void Initialize()
@@ -221,6 +179,5 @@ namespace KinectGestureRecognition
                 kinectSensor = null;
             }
         }
-
     }
 }

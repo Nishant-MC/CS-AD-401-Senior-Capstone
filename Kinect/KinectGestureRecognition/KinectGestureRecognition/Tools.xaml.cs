@@ -24,19 +24,6 @@ namespace Kinect.Toolbox
 
             return skeletons;
         }
-/*
-        void kinectSensor_SkeletonFrameReady(object sender, SkeletonFrameReadyEventArgs e)
-        {
-            SkeletonFrame frame = e.OpenSkeletonFrame();
-            if (frame == null)
-                return;
-
-            Skeleton[] skeletons = frame.GetSkeletons();
-
-            if (skeletons.All(s => s.TrackingState == SkeletonTrackingState.NotTracked))
-                return;
-        }
-*/
     }
 
     // Notifier class (for handling when properties change)

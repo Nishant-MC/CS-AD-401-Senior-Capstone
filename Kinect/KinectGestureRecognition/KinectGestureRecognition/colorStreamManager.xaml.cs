@@ -7,66 +7,67 @@ using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
-// Including our toolbox
-using Kinect.Toolbox;
 
-
-// Color Stream Manager class (for handling RGB + YUV input)
-public class ColorStreamManager : Notifier
+namespace Kinect.Toolbox
 {
-    public WriteableBitmap Bitmap { get; private set; }
-    int[] yuvTemp; // For 16b YUV format
-
-    static double Clamp(double value)
+    // Color Stream Manager class (for handling RGB + YUV input)
+    public class ColorStreamManager : Notifier
     {
-        return Math.Max(0, Math.Min(value, 255));
-    }
+        public WriteableBitmap Bitmap { get; private set; }
+        int[] yuvTemp; // For 16b YUV format
 
-    // YUV-RGB conversion function
-    static int ConvertFromYUV(byte y, byte u, byte v)
-    {
-        byte b = (byte)Clamp(1.164 * (y - 16) + 2.018 * (u - 128));
-        byte g = (byte)Clamp(1.164 * (y - 16) - 0.813 * (v - 128) - 0.391 * (u - 128));
-        byte r = (byte)Clamp(1.164 * (y - 16) + 1.596 * (v - 128));
-        
-        return (r << 16) + (g << 8) + (b);
-    }
-
-    public void Update(ColorImageFrame frame)
-    {
-        var pixelData = new byte[frame.PixelDataLength];
-        frame.CopyPixelDataTo(pixelData);
-
-        if (Bitmap == null) // This bitmap is BGR with 96 DPI
-            Bitmap = new WriteableBitmap(frame.Width, frame.Height, 96, 96, PixelFormats.Bgr32, null);
-
-        int stride = Bitmap.PixelWidth * Bitmap.Format.BitsPerPixel / 8;
-        Int32Rect dirtyRect = new Int32Rect(0, 0, Bitmap.PixelWidth, Bitmap.PixelHeight);
-
-        if (frame.Format == ColorImageFormat.RawYuvResolution640x480Fps15)
+        // Value rounding for RGB-YUV conversion
+        static double Clamp(double value)
         {
-            if (yuvTemp == null)
-                yuvTemp = new int[frame.Width * frame.Height];
-
-            int current = 0;
-            for (int uyvyIndex = 0; uyvyIndex < pixelData.Length; uyvyIndex += 4)
-            {
-                byte u = pixelData[uyvyIndex];
-                byte y1 = pixelData[uyvyIndex + 1];
-                byte v = pixelData[uyvyIndex + 2];
-                byte y2 = pixelData[uyvyIndex + 3];
-
-                yuvTemp[current++] = ConvertFromYUV(y1, u, v);
-                yuvTemp[current++] = ConvertFromYUV(y2, u, v);
-            }
-
-            Bitmap.WritePixels(dirtyRect, yuvTemp, stride, 0);
+            return Math.Max(0, Math.Min(value, 255));
         }
 
+        // YUV-RGB conversion function
+        static int ConvertFromYUV(byte y, byte u, byte v)
+        {
+            byte b = (byte)Clamp(1.164 * (y - 16) + 2.018 * (u - 128));
+            byte g = (byte)Clamp(1.164 * (y - 16) - 0.813 * (v - 128) - 0.391 * (u - 128));
+            byte r = (byte)Clamp(1.164 * (y - 16) + 1.596 * (v - 128));
 
-        else
-            Bitmap.WritePixels(dirtyRect, pixelData, stride, 0);
+            return (r << 16) + (g << 8) + (b);
+        }
 
-        RaisePropertyChanged(() => Bitmap);
+        public void Update(ColorImageFrame frame)
+        {
+            var pixelData = new byte[frame.PixelDataLength];
+            frame.CopyPixelDataTo(pixelData);
+
+            if (Bitmap == null) // This bitmap is BGR with 96 DPI
+                Bitmap = new WriteableBitmap(frame.Width, frame.Height, 96, 96, PixelFormats.Bgr32, null);
+
+            int stride = Bitmap.PixelWidth * Bitmap.Format.BitsPerPixel / 8;
+            Int32Rect dirtyRect = new Int32Rect(0, 0, Bitmap.PixelWidth, Bitmap.PixelHeight);
+
+            if (frame.Format == ColorImageFormat.RawYuvResolution640x480Fps15)
+            {
+                if (yuvTemp == null)
+                    yuvTemp = new int[frame.Width * frame.Height];
+
+                int current = 0;
+                for (int uyvyIndex = 0; uyvyIndex < pixelData.Length; uyvyIndex += 4)
+                {
+                    byte u = pixelData[uyvyIndex];
+                    byte y1 = pixelData[uyvyIndex + 1];
+                    byte v = pixelData[uyvyIndex + 2];
+                    byte y2 = pixelData[uyvyIndex + 3];
+
+                    yuvTemp[current++] = ConvertFromYUV(y1, u, v);
+                    yuvTemp[current++] = ConvertFromYUV(y2, u, v);
+                }
+
+                Bitmap.WritePixels(dirtyRect, yuvTemp, stride, 0);
+            }
+
+
+            else
+                Bitmap.WritePixels(dirtyRect, pixelData, stride, 0);
+
+            RaisePropertyChanged(() => Bitmap);
+        }
     }
 }
