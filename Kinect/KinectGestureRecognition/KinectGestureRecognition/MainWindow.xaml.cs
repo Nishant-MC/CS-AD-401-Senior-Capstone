@@ -54,23 +54,9 @@ using System.Linq.Expressions;
 using System.Windows.Media.Imaging;
 using System.Windows.Media;
 
+// Including our toolbox
+using Kinect.Toolbox;
 
-/*
-
- ### Extra includes for later if needed ###
- 
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-
- ### Extra includes for later if needed ###
- 
-*/
 
 namespace KinectGestureRecognition
 {
@@ -78,7 +64,7 @@ namespace KinectGestureRecognition
     /// Interaction logic for MainWindow.xaml
     /// </summary>
     
-    // Main Window class (where the magic happens)
+    // Main Window class (where the magic happens... eh, hopefully)
     public partial class MainWindow : Window
     {
 
@@ -92,7 +78,7 @@ namespace KinectGestureRecognition
 
 
         // -- COLOR MANAGER --
-
+/*
         Kinect.Toolbox.ColorStreamManager colorManager = new Kinect.Toolbox.ColorStreamManager(); // VAR LATER
 
         // Initializing a color stream manager {RGB input}
@@ -106,12 +92,12 @@ namespace KinectGestureRecognition
                 colorManager.Update(frame);
             }
         }
-
+*/
         // -- COLOR MANAGER --
 
 
         // -- DEPTH MANAGER --
-
+/*
         Kinect.Toolbox.DepthStreamManager depthManager = new Kinect.Toolbox.DepthStreamManager(); // VAR LATER
 
         // Initializing a depth stream manager {Intensity mapping}
@@ -125,7 +111,7 @@ namespace KinectGestureRecognition
                 depthManager.Update(frame);
             }
         }
-
+*/
         // -- DEPTH MANAGER --
 
 
@@ -220,175 +206,5 @@ namespace KinectGestureRecognition
             }
         }
 
-    }
-}
-
-
-// Utility toolbox for things I don't want to repeat over and over for different classes
-namespace Kinect.Toolbox
-{
-    // Notifier class (for handling when properties change)
-    public abstract class Notifier : INotifyPropertyChanged
-    {
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        protected void RaisePropertyChanged<T>(Expression<Func<T>> propertyExpression)
-        {
-            var memberExpression = propertyExpression.Body as MemberExpression;
-            if (memberExpression == null) return;
-
-            string propertyName = memberExpression.Member.Name;
-            if (PropertyChanged != null)
-                PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
-        }
-    }
-
-    // Color Stream Manager class (for handling RGB + YUV input)
-    public class ColorStreamManager : Notifier
-    {
-        public WriteableBitmap Bitmap { get; private set; }
-        int[] yuvTemp; // For 16b YUV format
-
-        static double Clamp(double value)
-        {
-            return Math.Max(0, Math.Min(value, 255));
-        }
-
-        // YUV-RGB conversion function
-        static int ConvertFromYUV(byte y, byte u, byte v)
-        {
-            byte b = (byte)Clamp(1.164 * (y - 16) + 2.018 * (u - 128));
-            byte g = (byte)Clamp(1.164 * (y - 16) - 0.813 * (v - 128) - 0.391 * (u - 128));
-            byte r = (byte)Clamp(1.164 * (y - 16) + 1.596 * (v - 128));
-
-            return (r << 16) + (g << 8) + (b);
-        }
-
-        public void Update(ColorImageFrame frame)
-        {
-            var pixelData = new byte[frame.PixelDataLength];
-            frame.CopyPixelDataTo(pixelData);
-
-            if (Bitmap == null) // This bitmap is BGR with 96 DPI
-                Bitmap = new WriteableBitmap(frame.Width, frame.Height, 96, 96, PixelFormats.Bgr32, null);
-
-            int stride = Bitmap.PixelWidth * Bitmap.Format.BitsPerPixel / 8;
-            Int32Rect dirtyRect = new Int32Rect(0, 0, Bitmap.PixelWidth, Bitmap.PixelHeight);
-
-            if (frame.Format == ColorImageFormat.RawYuvResolution640x480Fps15)
-            {
-                if (yuvTemp == null)
-                    yuvTemp = new int[frame.Width * frame.Height];
-
-                int current = 0;
-                for (int uyvyIndex = 0; uyvyIndex < pixelData.Length; uyvyIndex += 4)
-                {
-                    byte u = pixelData[uyvyIndex];
-                    byte y1 = pixelData[uyvyIndex + 1];
-                    byte v = pixelData[uyvyIndex + 2];
-                    byte y2 = pixelData[uyvyIndex + 3];
-
-                    yuvTemp[current++] = ConvertFromYUV(y1, u, v);
-                    yuvTemp[current++] = ConvertFromYUV(y2, u, v);
-                }
-
-                Bitmap.WritePixels(dirtyRect, yuvTemp, stride, 0);
-            }
-
-
-            else
-            {
-                Bitmap.WritePixels(dirtyRect, pixelData, stride, 0);
-            }
-
-            RaisePropertyChanged(() => Bitmap);
-        }
-    }
-
-    // Depth Stream Manager class (for handling RGB + YUV input)
-    public class DepthStreamManager : Notifier
-    {
-        byte[] depthFrame32;
-
-        public WriteableBitmap Bitmap { get; private set; }
-
-        public void Update(DepthImageFrame frame)
-        {
-            var pixelData = new short[frame.PixelDataLength];
-            frame.CopyPixelDataTo(pixelData);
-
-            if (depthFrame32 == null)
-                depthFrame32 = new byte[frame.Width * frame.Height * 4];
-            
-            if (Bitmap == null)
-                Bitmap = new WriteableBitmap(frame.Width, frame.Height, 96, 96, PixelFormats.Bgra32, null);
-
-            ConvertDepthFrame(pixelData);
-
-            int stride = Bitmap.PixelWidth * Bitmap.Format.BitsPerPixel / 8;
-            Int32Rect dirtyRect = new Int32Rect(0, 0, Bitmap.PixelWidth, Bitmap.PixelHeight);
-
-            Bitmap.WritePixels(dirtyRect, depthFrame32, stride, 0);
-
-            RaisePropertyChanged(() => Bitmap);
-        }
-
-        void ConvertDepthFrame(short[] depthFrame16)
-        {
-            for (int i16 = 0, i32 = 0; i16 < depthFrame16.Length && i32 < depthFrame32.Length; i16 ++, i32 += 4)
-            {
-                int user = depthFrame16[i16] & 0x07;        // 111 bitmask
-                int realDepth = (depthFrame16[i16] >> 3);   // Bitshift; 3x to the right
-
-                byte intensity = (byte)(255 - (255 * realDepth / 0x1fff)); // 255 = Close, 0 = Far
-
-                depthFrame32[i32] = 0;
-                depthFrame32[i32 + 1] = 0;
-                depthFrame32[i32 + 2] = 0;
-                depthFrame32[i32 + 3] = 255;
-
-                switch (user)
-                { 
-                    case 0: // No one is nearby
-                        depthFrame32[i32] = (byte)(intensity / 2);
-                        depthFrame32[i32 + 1] = (byte)(intensity / 2);
-                        depthFrame32[i32 + 2] = (byte)(intensity / 2);
-                        break;
-
-                    case 1: 
-                        depthFrame32[i32] = intensity;
-                        break;
-
-                    case 2:
-                        depthFrame32[i32 + 1] = intensity;
-                        break;
-
-                    case 3:
-                        depthFrame32[i32 + 2] = intensity;
-                        break;
-
-                    case 4:
-                        depthFrame32[i32] = intensity;
-                        depthFrame32[i32 + 1] = intensity;
-                        break;
-
-                    case 5:
-                        depthFrame32[i32] = intensity;
-                        depthFrame32[i32 + 2] = intensity;
-                        break;
-
-                    case 6:
-                        depthFrame32[i32 + 1] = intensity;
-                        depthFrame32[i32 + 2] = intensity;
-                        break;
-
-                    case 7:
-                        depthFrame32[i32] = intensity;
-                        depthFrame32[i32 + 1] = intensity;
-                        depthFrame32[i32 + 2] = intensity;
-                        break;
-                }
-            }
-        }
     }
 }

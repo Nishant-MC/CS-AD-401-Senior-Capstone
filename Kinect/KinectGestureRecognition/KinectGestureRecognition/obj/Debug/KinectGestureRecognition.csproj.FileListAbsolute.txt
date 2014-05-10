@@ -10,3 +10,11 @@ c:\users\loaner\documents\visual studio 2013\Projects\KinectGestureRecognition\K
 c:\users\loaner\documents\visual studio 2013\Projects\KinectGestureRecognition\KinectGestureRecognition\obj\Debug\KinectGestureRecognition.exe
 c:\users\loaner\documents\visual studio 2013\Projects\KinectGestureRecognition\KinectGestureRecognition\obj\Debug\KinectGestureRecognition.pdb
 c:\users\loaner\documents\visual studio 2013\Projects\KinectGestureRecognition\KinectGestureRecognition\obj\Debug\KinectGestureRecognition.csprojResolveAssemblyReference.cache
+C:\Users\Loaner\documents\visual studio 2013\Projects\KinectGestureRecognition\KinectGestureRecognition\obj\Debug\depthStreamManager.baml
+C:\Users\Loaner\documents\visual studio 2013\Projects\KinectGestureRecognition\KinectGestureRecognition\obj\Debug\colorStreamManager.baml
+C:\Users\Loaner\documents\visual studio 2013\Projects\KinectGestureRecognition\KinectGestureRecognition\obj\Debug\Tools.baml
+C:\Users\Loaner\documents\visual studio 2013\Projects\KinectGestureRecognition\KinectGestureRecognition\obj\Debug\skeletonDisplay.baml
+C:\Users\Loaner\documents\visual studio 2013\Projects\KinectGestureRecognition\KinectGestureRecognition\obj\Debug\depthStreamManager.g.cs
+C:\Users\Loaner\documents\visual studio 2013\Projects\KinectGestureRecognition\KinectGestureRecognition\obj\Debug\colorStreamManager.g.cs
+C:\Users\Loaner\documents\visual studio 2013\Projects\KinectGestureRecognition\KinectGestureRecognition\obj\Debug\Tools.g.cs
+C:\Users\Loaner\documents\visual studio 2013\Projects\KinectGestureRecognition\KinectGestureRecognition\obj\Debug\skeletonDisplay.g.cs
